@@ -76,5 +76,3 @@ deploy:
     local_dir: bin
     on:
       tags: true
-
-webhooks: https://outlook.office.com/webhook/17fe7a72-6996-4aaf-80da-1966225fb2b2@9fd980e1-0d69-4d90-9337-2490e573b2b3/TravisCI/52647dc1ed11447f8203828ad918be16/9171487a-5eed-41f5-b67b-cfcfb76d2ae9

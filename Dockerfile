@@ -1,4 +1,4 @@
-FROM anaxexp/alpine:3.7-2.0.1
+FROM anaxexp/alpine:3.8-2.1.0
 
 COPY ./bin/linux-amd64/anaxexp /usr/local/bin/anaxexp
 
