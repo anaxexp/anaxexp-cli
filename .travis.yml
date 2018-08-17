@@ -1,0 +1,80 @@
+language: go
+
+services:
+  - docker
+
+env:
+  global:
+    - DEP_VERSION=0.4.1
+    - VERSION="${TRAVIS_TAG:-dev}"
+    - TAGS="${VERSION:-latest}"
+  matrix:
+    - GIMME_OS=linux GIMME_ARCH=amd64
+    - GIMME_OS=darwin GIMME_ARCH=amd64
+    - GIMME_OS=windows GIMME_ARCH=amd64
+notifications:
+  webhooks:
+    - https://outlook.office.com/webhook/17fe7a72-6996-4aaf-80da-1966225fb2b2@9fd980e1-0d69-4d90-9337-2490e573b2b3/TravisCI/9107e5ec6b4740988b82917eac6191ce/9171487a-5eed-41f5-b67b-cfcfb76d2ae9
+    - https://outlook.office.com/webhook/17fe7a72-6996-4aaf-80da-1966225fb2b2@9fd980e1-0d69-4d90-9337-2490e573b2b3/TravisCI/52647dc1ed11447f8203828ad918be16/9171487a-5eed-41f5-b67b-cfcfb76d2ae9
+
+before_install:
+  - curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o $GOPATH/bin/dep
+  - chmod +x $GOPATH/bin/dep
+
+script:
+  - set -e
+  - dep ensure
+  - make
+  - make test
+
+after_success:
+  - ./release.sh
+
+before_deploy:
+  - make package
+
+deploy:
+  - provider: releases
+    api_key: $GITHUB_ACCESS_TOKEN
+    overwrite: true
+    skip_cleanup: true
+    file_glob: true
+    file:
+      - bin/anaxexp-*.tar.gz
+    on:
+      tags: true
+
+  - provider: s3
+    access_key_id: $AWS_ACCESS_KEY_ID
+    secret_access_key: $AWS_SECRET_ACCESS_KEY
+    bucket: anaxexp-releases
+    upload-dir: anaxexp-cli/dev
+    overwrite: true
+    skip_cleanup: true
+    local_dir: bin
+    on:
+      tags: false
+
+  - provider: s3
+    access_key_id: $AWS_ACCESS_KEY_ID
+    secret_access_key: $AWS_SECRET_ACCESS_KEY
+    bucket: anaxexp-releases
+    upload-dir: anaxexp-cli/${VERSION}
+    overwrite: true
+    skip_cleanup: true
+    local_dir: bin
+    on:
+      tags: true
+
+  - provider: s3
+    access_key_id: $AWS_ACCESS_KEY_ID
+    secret_access_key: $AWS_SECRET_ACCESS_KEY
+    bucket: anaxexp-releases
+    upload-dir: anaxexp-cli/latest
+    overwrite: true
+    skip_cleanup: true
+    local_dir: bin
+    on:
+      tags: true
+
+webhooks: https://outlook.office.com/webhook/17fe7a72-6996-4aaf-80da-1966225fb2b2@9fd980e1-0d69-4d90-9337-2490e573b2b3/TravisCI/52647dc1ed11447f8203828ad918be16/9171487a-5eed-41f5-b67b-cfcfb76d2ae9
